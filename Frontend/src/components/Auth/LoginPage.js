@@ -25,7 +25,7 @@ const LoginPage = () => {
         <div className='login_page__container'>
             <PointsDecorator />
             <div className='login_page__inputs_container'>
-                <CredentialsInput onTyping={onTyping} title='Username' name='username' value={credentials.username} type='text' />
+                <CredentialsInput onTyping={onTyping} title='Username' name='username' value={credentials.username} isWarn={false} type='text' />
                 <CredentialsInput onTyping={onTyping} title='Password' name='password' value={credentials.password} type='password' />
                 {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name='validatedPassword' value={credentials.validatedPassword} type='password' />}
             </div>
