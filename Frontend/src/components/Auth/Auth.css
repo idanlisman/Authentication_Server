@@ -1,0 +1,53 @@
+.login_page__container {
+    border: solid;
+    border-color: black;
+    border-radius: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    padding: 1rem;
+    transition: height 1s;
+}
+
+.login_page__buttons_container {
+    display: flex;
+    justify-content: center;
+}
+
+.login_page__inputs_inner_container {
+    text-align: left;
+    margin: 1.5rem auto;
+}
+
+.login_page__input_title {
+    font-family:'Lucida Grande';
+    font-size: 1rem;
+}
+
+.login_page__input_title,
+.login_page__input_note {
+    position: relative;
+    left: 0.5vw;
+}
+
+.login_page__button {
+    margin: 0.5rem;
+}
+
+.point_decorator__container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.point_decorator {
+    cursor: none;
+    border: solid;
+    border-color: black;
+    border-radius: 100%;
+    width: 1rem;
+    height: 1rem;
+    box-shadow: 3px 3px 0 black;
+    background-color: aquamarine;
+}
