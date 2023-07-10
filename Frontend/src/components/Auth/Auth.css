@@ -44,6 +44,7 @@
 .point_decorator {
     cursor: none;
     border: solid;
+    border-width: 1px;
     border-color: black;
     border-radius: 100%;
     width: 1rem;

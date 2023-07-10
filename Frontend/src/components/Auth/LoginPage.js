@@ -8,6 +8,7 @@ const LoginPage = () => {
 
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({});
+    const [isFieldWarn, setIsFieldWarn] = useState({});
 
     const onSignUpClickHandler = () => setIsSignUp(true);
     const onBackClickHandler = () => setIsSignUp(false);
@@ -15,19 +16,38 @@ const LoginPage = () => {
         const { name, value } = event.target;
         setCredentials({ ...credentials, [name]: value });
     }
-    const onSubmitSignUp = () => { };
+    const onSubmitSignUp = () => {
+        validateFieldsNotNull(true);
+    };
+    const setInvalidFieldWarn = (name, warn) => setIsFieldWarn(isFieldWarn => ({ ...isFieldWarn, [name]: warn }));
 
     function validateFieldsNotNull(isSignUp) {
-        return Object.values.every()
+        const { username, password, validatedPassword } = credentials;
+
+        if (!username || username === '') {
+            setInvalidFieldWarn('username', true);
+        } else {
+            setInvalidFieldWarn('username', false);
+        }
+        if (!password || password === '') {
+            setInvalidFieldWarn('password', true);
+        } else {
+            setInvalidFieldWarn('password', false);
+        }
+        if (isSignUp && (!validatedPassword || validatedPassword === '')) {
+            setInvalidFieldWarn('validatedPassword', true);
+        } else {
+            setInvalidFieldWarn('validatedPassword', false);
+        }
     }
 
     return (
         <div className='login_page__container'>
             <PointsDecorator />
             <div className='login_page__inputs_container'>
-                <CredentialsInput onTyping={onTyping} title='Username' name='username' value={credentials.username} isWarn={false} type='text' />
-                <CredentialsInput onTyping={onTyping} title='Password' name='password' value={credentials.password} type='password' />
-                {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name='validatedPassword' value={credentials.validatedPassword} type='password' />}
+                <CredentialsInput onTyping={onTyping} title='Username' name='username' value={credentials.username} isWarn={isFieldWarn.username} type='text' />
+                <CredentialsInput onTyping={onTyping} title='Password' name='password' value={credentials.password} isWarn={isFieldWarn.password} type='password' />
+                {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name='validatedPassword' value={credentials.validatedPassword} isWarn={isFieldWarn.validatedPassword} type='password' />}
             </div>
             <div className='login_page__buttons_container'>
                 {
