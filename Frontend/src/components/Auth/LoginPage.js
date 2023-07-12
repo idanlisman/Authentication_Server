@@ -33,11 +33,17 @@ const LoginPage = () => {
                 .then(() => {
                     setCredentials({});
                 })
+                .catch((err) => { console.log(err); })
         }
     };
 
     const onSubmitLogIn = () => {
         const isFieldsNotNull = validateFieldsNotNull();
+        axios.post('http://localhost:3002/v1/auth/login', credentials)
+            .then(res => {
+                console.log(res.data.token);
+                setCredentials({});
+            })
     };
 
     function validatePassword() {

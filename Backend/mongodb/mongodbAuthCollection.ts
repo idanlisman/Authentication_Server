@@ -1,6 +1,6 @@
 import { InsertOneResult } from 'mongodb';
 import { MongodbClient } from './mongoClient';
-import { hash } from 'bcrypt';
+import { hash, compare } from 'bcrypt';
 
 const MONGO_DB_NAME = 'TestDatabase';
 const MONGO_DB_AUTH_COLLECTION_NAME = 'Authentication';
@@ -20,6 +20,18 @@ class MongodbAuthCollection extends MongodbClient {
             throw err
 
         }
+    }
+
+    async validateUser(username: string, password: string) {
+        const isUserExist = await this.collection.findOne({ username });
+        if (isUserExist) {
+            const isPasswordCorrect = await compare(password, isUserExist.password);
+            if (isPasswordCorrect) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
