@@ -22,22 +22,51 @@
 }
 
 .login_page__input_title {
-    font-family: 'Lucida Grande';
+    font-family: 'Trebuchet MS';
     font-size: 1rem;
-}
-
-.login_page__input_title {
     position: relative;
     left: 0.5vw;
 }
 
+.login_page__input_validation_point_valid,
+.login_page__input_validation_point_invalid,
+.login_page__input_validation_point_loading {
+    font-size: 4.5rem;
+    font-family: monospace;
+    position: relative;
+    top: 1.1rem;
+    line-height: 0;
+    transition: color ease 400ms;
+}
+
+.login_page__input_validation_loading {
+    position: relative;
+    left: 0.95rem;
+    width: 0.8rem !important;
+    height: 0.8rem !important;
+}
+
+.login_page__input_validation_point_loading {
+    visibility: hidden;
+    color: rgb(197, 249, 253);
+}
+
+.login_page__input_validation_point_valid {
+    color: rgb(125, 201, 10);
+}
+
+.login_page__input_validation_point_invalid {
+    color: rgb(195, 79, 79);
+}
+
 .login_page__input_field_warn {
+    border-color: red !important;
     animation: ease;
-    animation-name: warning;
+    animation-name: login_warning;
     animation-duration: 300ms;
 }
 
-@keyframes warning {
+@keyframes login_warning {
     25% {
         transform: translateX(-1%);
     }
@@ -63,6 +92,8 @@
 
 .login_page__button {
     margin: 0.5rem;
+    margin-bottom: 1.2rem;
+    font-family: 'Trebuchet MS' !important;
 }
 
 .point_decorator__container {
@@ -70,8 +101,8 @@
     justify-content: space-between;
 }
 
-.point_decorator {
-    cursor: none;
+.point_decorator__button {
+    cursor: default !important;
     border: solid;
     border-width: 1px;
     border-color: black;
@@ -80,4 +111,29 @@
     height: 1rem;
     box-shadow: 3px 3px 0 black;
     background-color: aquamarine;
+}
+
+.point_decorator__button_warn {
+    animation: ease-in-out;
+    animation-name: failure_warning;
+    animation-duration: 1s;
+    animation-iteration-count: 3;
+}
+
+@keyframes failure_warning {
+    50% {
+        background-color: red;
+    }
+
+    100% {
+        background-color: aquamarine;
+    }
+}
+
+.point_decorator__msg {
+    font-family: 'Trebuchet MS';
+    font-size: 0.8rem;
+    color: red;
+    line-height: 0;
+    margin: auto;
 }

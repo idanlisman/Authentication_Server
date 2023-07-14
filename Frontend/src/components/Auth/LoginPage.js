@@ -1,9 +1,12 @@
 import Button from 'react-bootstrap/Button';
 import './Auth.css';
-import { useState } from 'react';
-import PointsDecorator from './PointsDecorator';
+import { useContext, useEffect, useRef, useState } from 'react';
+import PointsDecorator from './layouts/PointsDecorator';
 import CredentialsInput from './CredentialsInput';
 import axios from 'axios';
+import { UsernameContext } from './UsernameContext';
+import Cookies from 'universal-cookie';
+const cookies = new Cookies();
 
 const USERNAME_ID = 'username';
 const PASSWORD_ID = 'password';
@@ -11,40 +14,78 @@ const PASSWORD_VALIDATE_ID = 'validatedPassword';
 
 const LoginPage = () => {
 
+    const usernameEvaluation = useRef();
+    const [usernameContext, setUsernameContext] = useContext(UsernameContext);
+
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({});
     const [isFieldWarn, setIsFieldWarn] = useState({});
+    const [isUsernameValid, setIsUsernameValid] = useState(false);
+    const [submitFailureMsg, setSubmitFailureMsg] = useState();
+
+    useEffect(() => {
+        setSubmitFailureMsg();
+    }, [isSignUp])
 
     const setInvalidFieldWarn = (name, warn) => setIsFieldWarn(isFieldWarn => ({ ...isFieldWarn, [name]: warn }));
+    const setTokenCookie = (token) => cookies.set('token', token, { path: '/' });
+
     const onSignUpClickHandler = () => setIsSignUp(true);
     const onBackClickHandler = () => setIsSignUp(false);
     const onTyping = (event) => {
         const { name, value } = event.target;
         setCredentials({ ...credentials, [name]: value });
-
         setIsFieldWarn({});
+
+        if (name === 'username') {
+            setIsUsernameValid();
+            clearTimeout(usernameEvaluation.current);
+            usernameEvaluation.current = setTimeout(async () => { await validateUsername(value) }, 500);
+        }
     }
 
     const onSubmitSignUp = async () => {
-        const isFieldsNotNull = validateFieldsNotNull();
+        const isFieldsNotNull = validateFieldsNotNull(true);
         const isPasswordValid = validatePassword();
         if (isFieldsNotNull && isPasswordValid) {
             axios.post('http://localhost:3002/v1/auth/signup', credentials)
                 .then(() => {
                     setCredentials({});
+                    setIsSignUp(false);
+                    setSubmitFailureMsg();
                 })
-                .catch((err) => { console.log(err); })
+                .catch(err => {
+                    if (err.response.status === 400) {
+                        setSubmitFailureMsg('Username Already Exists');
+                    }
+                })
+                .finally(() => { setIsUsernameValid(false); })
         }
     };
 
     const onSubmitLogIn = () => {
-        const isFieldsNotNull = validateFieldsNotNull();
-        axios.post('http://localhost:3002/v1/auth/login', credentials)
-            .then(res => {
-                console.log(res.data.token);
-                setCredentials({});
-            })
+        const isFieldsNotNull = validateFieldsNotNull(false);
+        if (isFieldsNotNull) {
+            axios.post('http://localhost:3002/v1/auth/login', credentials)
+                .then(res => {
+                    setUsernameContext(credentials.username);
+                    setTokenCookie(res.data.token);
+                    setCredentials({});
+                    setSubmitFailureMsg();
+                })
+                .catch(err => {
+                    if (err.response.status === 403) {
+                        setSubmitFailureMsg('Wrong Username or Password');
+                    }
+                })
+        }
     };
+
+    async function validateUsername(username) {
+        axios.post('http://localhost:3002/v1/auth/validate', { username })
+            .then(() => { setIsUsernameValid(true) })
+            .catch(() => { setIsUsernameValid(false) })
+    }
 
     function validatePassword() {
         if (credentials[PASSWORD_ID] !== credentials[PASSWORD_VALIDATE_ID]) {
@@ -55,9 +96,14 @@ const LoginPage = () => {
         return true;
     }
 
-    function validateFieldsNotNull() {
+    function validateFieldsNotNull(isSignUp) {
         let isFieldsValid = true;
-        const fieldsName = [USERNAME_ID, PASSWORD_ID, PASSWORD_VALIDATE_ID];
+        const fieldsName = [USERNAME_ID, PASSWORD_ID];
+        if (isSignUp) {
+            fieldsName.push(PASSWORD_VALIDATE_ID);
+        } else {
+            delete credentials[PASSWORD_VALIDATE_ID];
+        }
 
         fieldsName.map(field => {
             if (!(field in credentials)) {
@@ -68,6 +114,7 @@ const LoginPage = () => {
 
         Object.keys(credentials).map(field => {
             if (credentials[field] === '') {
+                isFieldsValid = false;
                 setInvalidFieldWarn(field, true);
             } else {
                 setInvalidFieldWarn(field, false);
@@ -79,9 +126,11 @@ const LoginPage = () => {
 
     return (
         <div className='login_page__container'>
-            <PointsDecorator />
+            <PointsDecorator msg={submitFailureMsg} />
             <div className='login_page__inputs_container'>
-                <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} type='text' />
+                <div>
+                    <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} presetValidationStatus={isSignUp} status={isUsernameValid} type='text' />
+                </div>
                 <CredentialsInput onTyping={onTyping} title='Password' name={PASSWORD_ID} value={credentials[PASSWORD_ID]} isWarn={isFieldWarn[PASSWORD_ID]} type='password' />
                 {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name={PASSWORD_VALIDATE_ID} value={credentials[PASSWORD_VALIDATE_ID]} isWarn={isFieldWarn[PASSWORD_VALIDATE_ID]} type='password' />}
             </div>

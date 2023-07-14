@@ -1,4 +1,4 @@
-import { MongoClient, Collection } from 'mongodb';
+import { MongoClient, Collection, Document } from 'mongodb';
 
 const MONGO_DB_URL = 'mongodb://localhost';
 
@@ -30,6 +30,36 @@ class MongodbClient {
         } catch (err) {
             console.error(err);
             throw err
+        }
+    }
+
+    async _getDocumnetByUser(username: string): Promise<Document> {        
+        try {
+            return await this.collection.findOne({ username });
+        } catch (err) {
+            console.error({ err });
+            throw err;
+
+        }
+    }
+
+    async _setDocument(document: Document): Promise<Document> {
+        try {
+            return await this.collection.insertOne(document);
+        } catch (err) {
+            console.error({ err });
+            throw err;
+
+        }
+    }
+
+    async _updateDocumentUserKey(username: string, key: string): Promise<Document> {
+        try {
+            return await this.collection.updateOne({ username }, { $set: { key } });
+        } catch (err) {
+            console.error({ err });
+            throw err;
+
         }
     }
 }
