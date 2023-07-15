@@ -1,10 +1,9 @@
 import Button from 'react-bootstrap/Button';
 import './Auth.css';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PointsDecorator from './layouts/PointsDecorator';
 import CredentialsInput from './CredentialsInput';
 import axios from 'axios';
-import { UsernameContext } from './UsernameContext';
 import Cookies from 'universal-cookie';
 const cookies = new Cookies();
 
@@ -15,7 +14,6 @@ const PASSWORD_VALIDATE_ID = 'validatedPassword';
 const LoginPage = () => {
 
     const usernameEvaluation = useRef();
-    const [usernameContext, setUsernameContext] = useContext(UsernameContext);
 
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({});
@@ -68,7 +66,6 @@ const LoginPage = () => {
         if (isFieldsNotNull) {
             axios.post('http://localhost:3002/v1/auth/login', credentials)
                 .then(res => {
-                    setUsernameContext(credentials.username);
                     setTokenCookie(res.data.token);
                     setCredentials({});
                     setSubmitFailureMsg();
@@ -125,31 +122,34 @@ const LoginPage = () => {
     }
 
     return (
-        <div className='login_page__container'>
-            <PointsDecorator msg={submitFailureMsg} />
-            <div className='login_page__inputs_container'>
-                <div>
-                    <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} presetValidationStatus={isSignUp} status={isUsernameValid} type='text' />
+        <>  
+            <div className='login_page__background'></div>
+            <div className='login_page__container'>
+                <PointsDecorator msg={submitFailureMsg} />
+                <div className='login_page__inputs_container'>
+                    <div>
+                        <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} presetValidationStatus={isSignUp} status={isUsernameValid} type='text' />
+                    </div>
+                    <CredentialsInput onTyping={onTyping} title='Password' name={PASSWORD_ID} value={credentials[PASSWORD_ID]} isWarn={isFieldWarn[PASSWORD_ID]} type='password' />
+                    {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name={PASSWORD_VALIDATE_ID} value={credentials[PASSWORD_VALIDATE_ID]} isWarn={isFieldWarn[PASSWORD_VALIDATE_ID]} type='password' />}
                 </div>
-                <CredentialsInput onTyping={onTyping} title='Password' name={PASSWORD_ID} value={credentials[PASSWORD_ID]} isWarn={isFieldWarn[PASSWORD_ID]} type='password' />
-                {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name={PASSWORD_VALIDATE_ID} value={credentials[PASSWORD_VALIDATE_ID]} isWarn={isFieldWarn[PASSWORD_VALIDATE_ID]} type='password' />}
+                <div className='login_page__buttons_container'>
+                    {
+                        isSignUp ?
+                            <>
+                                <Button onClick={onBackClickHandler} variant="secondary" className='login_page__button'>{'⇤ Log In'}</Button>
+                                <Button onClick={onSubmitSignUp} variant="outline-dark" className='login_page__button'>Sign Up</Button>
+                            </> :
+                            <>
+                                <Button onClick={onSubmitLogIn} variant="outline-dark" className='login_page__button'>Log In</Button>
+                                <br />
+                                <Button onClick={onSignUpClickHandler} variant="secondary" className='login_page__button'>{'Sign Up ⇥'}</Button>
+                            </>
+                    }
+                </div>
+                <PointsDecorator />
             </div>
-            <div className='login_page__buttons_container'>
-                {
-                    isSignUp ?
-                        <>
-                            <Button onClick={onBackClickHandler} variant="secondary" className='login_page__button'>{'⇤ Log In'}</Button>
-                            <Button onClick={onSubmitSignUp} variant="outline-dark" className='login_page__button'>Sign Up</Button>
-                        </> :
-                        <>
-                            <Button onClick={onSubmitLogIn} variant="outline-dark" className='login_page__button'>Log In</Button>
-                            <br />
-                            <Button onClick={onSignUpClickHandler} variant="secondary" className='login_page__button'>{'Sign Up ⇥'}</Button>
-                        </>
-                }
-            </div>
-            <PointsDecorator />
-        </div>
+        </>
     );
 }
 
