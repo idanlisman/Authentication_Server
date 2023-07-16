@@ -1,9 +1,11 @@
 import Button from 'react-bootstrap/Button';
 import './Auth.css';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { LoginPageStateContext } from './LoginPageStateContext';
 import PointsDecorator from './layouts/PointsDecorator';
 import CredentialsInput from './CredentialsInput';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 import Cookies from 'universal-cookie';
 const cookies = new Cookies();
 
@@ -14,6 +16,8 @@ const PASSWORD_VALIDATE_ID = 'validatedPassword';
 const LoginPage = () => {
 
     const usernameEvaluation = useRef();
+    const navigate = useNavigate();
+    const [isLoginPage, setIsLoginPage] = useContext(LoginPageStateContext);
 
     const [isSignUp, setIsSignUp] = useState(false);
     const [credentials, setCredentials] = useState({});
@@ -26,10 +30,13 @@ const LoginPage = () => {
     }, [isSignUp])
 
     const setInvalidFieldWarn = (name, warn) => setIsFieldWarn(isFieldWarn => ({ ...isFieldWarn, [name]: warn }));
-    const setTokenCookie = (token) => cookies.set('token', token, { path: '/' });
+    const setTokenCookie = (token) => cookies.set('token', token, { paht: '/' });
+    const setLoginScreenActivityStateOff = () => setIsLoginPage({ ...isLoginPage, isScreenActive: false });
+    const setUserConnected = () => setIsLoginPage({ ...isLoginPage, isUserConnected: true });
 
     const onSignUpClickHandler = () => setIsSignUp(true);
     const onBackClickHandler = () => setIsSignUp(false);
+
     const onTyping = (event) => {
         const { name, value } = event.target;
         setCredentials({ ...credentials, [name]: value });
@@ -53,8 +60,10 @@ const LoginPage = () => {
                     setSubmitFailureMsg();
                 })
                 .catch(err => {
-                    if (err.response.status === 400) {
+                    if (err.response?.status === 400) {
                         setSubmitFailureMsg('Username Already Exists');
+                    } else {
+                        setSubmitFailureMsg('Internal Error - Request Failed');
                     }
                 })
                 .finally(() => { setIsUsernameValid(false); })
@@ -67,12 +76,14 @@ const LoginPage = () => {
             axios.post('http://localhost:3002/v1/auth/login', credentials)
                 .then(res => {
                     setTokenCookie(res.data.token);
-                    setCredentials({});
-                    setSubmitFailureMsg();
+                    navigate(credentials.username);
+                    setLoginScreenActivityStateOff();
                 })
                 .catch(err => {
-                    if (err.response.status === 403) {
+                    if (err.response?.status === 403) {
                         setSubmitFailureMsg('Wrong Username or Password');
+                    } else {
+                        setSubmitFailureMsg('Internal Error - Request Failed');
                     }
                 })
         }
@@ -122,13 +133,13 @@ const LoginPage = () => {
     }
 
     return (
-        <>  
-            <div className='login_page__background'></div>
+        <>
+            <div className='login_page__background' onClick={setLoginScreenActivityStateOff} />
             <div className='login_page__container'>
                 <PointsDecorator msg={submitFailureMsg} />
                 <div className='login_page__inputs_container'>
                     <div>
-                        <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} presetValidationStatus={isSignUp} status={isUsernameValid} type='text' />
+                        <CredentialsInput onTyping={onTyping} title='Username' name={USERNAME_ID} value={credentials[USERNAME_ID]} isWarn={isFieldWarn[USERNAME_ID]} presetValidationStatus={isSignUp} status={isUsernameValid} setFocus={true} type='text' />
                     </div>
                     <CredentialsInput onTyping={onTyping} title='Password' name={PASSWORD_ID} value={credentials[PASSWORD_ID]} isWarn={isFieldWarn[PASSWORD_ID]} type='password' />
                     {isSignUp && <CredentialsInput onTyping={onTyping} title='Validate Password' name={PASSWORD_VALIDATE_ID} value={credentials[PASSWORD_VALIDATE_ID]} isWarn={isFieldWarn[PASSWORD_VALIDATE_ID]} type='password' />}
