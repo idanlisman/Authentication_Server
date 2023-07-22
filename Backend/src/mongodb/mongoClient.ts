@@ -33,7 +33,7 @@ class MongodbClient {
         }
     }
 
-    async _getDocumnetByUser(username: string): Promise<Document> {        
+    async _getDocumnetByUser(username: string): Promise<Document> {
         try {
             return await this.collection.findOne({ username });
         } catch (err) {

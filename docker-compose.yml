@@ -8,3 +8,15 @@ services:
       MONGO_INITDB_DATABASE: TestDatabase
     volumes:
       - ./volume/mongodb:/data/db
+  backend:
+    depends_on:
+      - mongodb
+    build: ./Backend
+    ports:
+      - 3002:3002
+  frontend:
+    depends_on:
+      - backend
+    build: ./Frontend
+    ports:
+      - 3000:3000
