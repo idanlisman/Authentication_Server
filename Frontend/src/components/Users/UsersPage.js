@@ -15,7 +15,6 @@ const UsersPage = () => {
     }, [path])
 
     async function getUserData() {
-        const token = cookies.get('token');
         await axios.get(`http://localhost:3002/v1/auth/users/${username}`, { withCredentials: true })
             .then(res => {
                 setPassword(res.data.password);
