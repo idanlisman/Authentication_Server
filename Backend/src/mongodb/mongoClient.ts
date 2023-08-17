@@ -1,15 +1,13 @@
 import { MongoClient, Collection, Document } from 'mongodb';
 
-const MONGO_DB_URL = 'mongodb://localhost';
-
 class MongodbClient {
     private readonly client: MongoClient;
     private readonly dbName: string;
     private readonly collectionName: string;
     collection: Collection;
 
-    constructor(dbName: string, collectionName: string) {
-        this.client = new MongoClient(MONGO_DB_URL);
+    constructor(dbName: string, collectionName: string) {                
+        this.client = new MongoClient(process.env.MONGO_DB_URL);
         this.dbName = dbName;
         this.collectionName = collectionName;
     }

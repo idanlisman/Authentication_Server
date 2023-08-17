@@ -9,6 +9,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cookies());
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { authRouter } from './src/controller/authentication';
 app.use('/v1/auth', authRouter);
 

@@ -1,14 +1,11 @@
-import { InsertOneResult, Document } from 'mongodb';
+import { Document } from 'mongodb';
 import { MongodbClient } from './mongoClient';
 import { hash, compare } from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 
-const MONGO_DB_NAME = 'TestDatabase';
-const MONGO_DB_AUTH_COLLECTION_NAME = 'Authentication';
-
 class MongodbAuthCollection extends MongodbClient {
     constructor() {
-        super(MONGO_DB_NAME, MONGO_DB_AUTH_COLLECTION_NAME)
+        super(process.env.MONGO_DB_NAME, process.env.MONGO_DB_AUTH_COLLECTION_NAME)
         this.connect();
     }
 

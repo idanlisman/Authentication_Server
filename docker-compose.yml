@@ -11,12 +11,18 @@ services:
   backend:
     depends_on:
       - mongodb
-    build: ./Backend
+    build: 
+      context: ./Backend
     ports:
       - 3002:3002
+    environment:
+      MONGO_DB_URL: mongodb://mongodb
+      MONGO_DB_NAME: TestDatabase
+      MONGO_DB_AUTH_COLLECTION_NAME: Authentication
   frontend:
     depends_on:
       - backend
-    build: ./Frontend
+    build:
+      context: ./Frontend
     ports:
       - 3000:3000
