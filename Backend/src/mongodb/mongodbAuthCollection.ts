@@ -20,9 +20,9 @@ class MongodbAuthCollection extends MongodbClient {
     }
 
     async validateUser(username: string, password: string): Promise<string | false> {
-        const isUserExist = await this._getDocumnetByUser(username);
-        if (isUserExist) {
-            const isPasswordCorrect = await compare(password, isUserExist.password);
+        const userData = await this._getDocumnetByUser(username);
+        if (userData) {
+            const isPasswordCorrect = await compare(password, userData.password);
             if (isPasswordCorrect) {
                 return this.updateTokenKey(username);
             }

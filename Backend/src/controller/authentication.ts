@@ -11,7 +11,7 @@ async function signIn(req: express.Request, res: express.Response, next: express
     try {
         const key = await mongodbAuthCollection.validateUser(username, password);
         if (key) {
-            const token = sign({ password }, `${key}`);
+            const token = sign({ password }, key);
             res.status(200).json({ token });
         } else {
             res.status(403).json({});
@@ -66,7 +66,7 @@ async function users(req: express.Request, res: express.Response, next: express.
 
     const isPasswordCorrect = await compare(tokenValue.password, password);
     if (isPasswordCorrect) {
-        res.status(200).json({ password })
+        res.status(200).json({ msg: "Hello From the Backend, You are Authenticated" })
     } else {
         res.status(500).json({});
     }

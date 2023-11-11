@@ -8,21 +8,21 @@ services:
       MONGO_INITDB_DATABASE: TestDatabase
     volumes:
       - ./volume/mongodb:/data/db
-  backend:
-    depends_on:
-      - mongodb
-    build: 
-      context: ./Backend
-    ports:
-      - 3002:3002
-    environment:
-      MONGO_DB_URL: mongodb://mongodb
-      MONGO_DB_NAME: TestDatabase
-      MONGO_DB_AUTH_COLLECTION_NAME: Authentication
-  frontend:
-    depends_on:
-      - backend
-    build:
-      context: ./Frontend
-    ports:
-      - 3000:3000
+  # backend:
+  #   depends_on:
+  #     - mongodb
+  #   build: 
+  #     context: ./Backend
+  #   ports:
+  #     - 3002:3002
+  #   environment:
+  #     MONGO_DB_URL: mongodb://mongodb
+  #     MONGO_DB_NAME: TestDatabase
+  #     MONGO_DB_AUTH_COLLECTION_NAME: Authentication
+  # frontend:
+  #   depends_on:
+  #     - backend
+  #   build:
+  #     context: ./Frontend
+  #   ports:
+  #     - 3000:3000
