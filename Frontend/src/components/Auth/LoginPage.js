@@ -41,6 +41,7 @@ const LoginPage = () => {
         const { name, value } = event.target;
         setCredentials({ ...credentials, [name]: value });
         setIsFieldWarn({});
+        setSubmitFailureMsg();
 
         if (name === 'username') {
             setIsUsernameValid();
@@ -54,9 +55,9 @@ const LoginPage = () => {
         const isPasswordValid = validatePassword();
         if (isFieldsNotNull && isPasswordValid) {
             axios.post('http://localhost:3002/v1/auth/signup', credentials)
+                .then(() => { return onSubmitLogIn() })
                 .then(() => {
                     setCredentials({});
-                    setIsSignUp(false);
                     setSubmitFailureMsg();
                 })
                 .catch(err => {
@@ -66,11 +67,13 @@ const LoginPage = () => {
                         setSubmitFailureMsg('Internal Error - Request Failed');
                     }
                 })
-                .finally(() => { setIsUsernameValid(false); })
+                .finally(() => {
+                    setIsUsernameValid(false); 
+                })
         }
     };
 
-    const onSubmitLogIn = () => {
+    const onSubmitLogIn = async () => {
         const isFieldsNotNull = validateFieldsNotNull(false);
         if (isFieldsNotNull) {
             axios.post('http://localhost:3002/v1/auth/login', credentials)
@@ -148,17 +151,15 @@ const LoginPage = () => {
                     {
                         isSignUp ?
                             <>
-                                <Button onClick={onBackClickHandler} variant="secondary" className='login_page__button'>{'⇤ Log In'}</Button>
-                                <Button onClick={onSubmitSignUp} variant="outline-dark" className='login_page__button'>Sign Up</Button>
+                                <Button onClick={onBackClickHandler} variant="outline-dark" className='login_page__button__small'>⇤ Log In</Button>
+                                <Button onClick={onSubmitSignUp} variant="secondary" className='login_page__button__large'>Sign Up</Button>
                             </> :
                             <>
-                                <Button onClick={onSubmitLogIn} variant="outline-dark" className='login_page__button'>Log In</Button>
-                                <br />
-                                <Button onClick={onSignUpClickHandler} variant="secondary" className='login_page__button'>{'Sign Up ⇥'}</Button>
+                                <Button onClick={onSubmitLogIn} variant="secondary" className='login_page__button__large'>Log In</Button>
+                                <Button onClick={onSignUpClickHandler} variant="outline-dark" className='login_page__button__small'>Sign Up ⇥</Button>
                             </>
                     }
                 </div>
-                <PointsDecorator />
             </div>
         </>
     );

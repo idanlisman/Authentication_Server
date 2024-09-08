@@ -1,5 +1,6 @@
 import * as express from 'express';
 const authRouter = express.Router();
+import { Document } from 'mongodb';
 import { MongodbAuthCollection } from '../mongodb/mongodbAuthCollection';
 const mongodbAuthCollection = new MongodbAuthCollection();
 
@@ -9,7 +10,7 @@ import { compare } from 'bcrypt';
 async function signIn(req: express.Request, res: express.Response, next: express.NextFunction) {
     const { username, password } = req.body;
     try {
-        const key = await mongodbAuthCollection.validateUser(username, password);
+        const key: string = await mongodbAuthCollection.validateUser(username, password);
         if (key) {
             const token = sign({ password }, key);
             res.status(200).json({ token });
@@ -24,7 +25,7 @@ async function signIn(req: express.Request, res: express.Response, next: express
 async function signUp(req: express.Request, res: express.Response, next: express.NextFunction) {
     const { username, password } = req.body;
     try {
-        const result = await mongodbAuthCollection.setNewUser(username, password);
+        const result: Document = await mongodbAuthCollection.setNewUser(username, password);
         if (result) {
             res.status(200).json({});
         } else {
@@ -38,7 +39,7 @@ async function signUp(req: express.Request, res: express.Response, next: express
 async function validate(req: express.Request, res: express.Response, next: express.NextFunction) {
     const { username } = req.body;
     try {
-        const result = await mongodbAuthCollection._getDocumnetByUser(username);
+        const result: Document = await mongodbAuthCollection._getDocumnetByUser(username);
         if (!result && username !== '') {
             res.status(200).json({});
         } else {
@@ -56,7 +57,7 @@ async function users(req: express.Request, res: express.Response, next: express.
     let password: string;
 
     try {
-        const userData = await mongodbAuthCollection._getDocumnetByUser(username);
+        const userData: Document = await mongodbAuthCollection._getDocumnetByUser(username);
         password = userData.password;
         tokenValue = verify(token, userData.key);
     } catch (err) {

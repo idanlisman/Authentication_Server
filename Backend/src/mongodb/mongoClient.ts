@@ -57,7 +57,6 @@ class MongodbClient {
         } catch (err) {
             console.error({ err });
             throw err;
-
         }
     }
 }

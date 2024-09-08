@@ -9,17 +9,15 @@ class MongodbAuthCollection extends MongodbClient {
         this.connect();
     }
 
-    async setNewUser(username: string, password: string): Promise<Document | false> {
+    async setNewUser(username: string, password: string): Promise<Document> {
         const isUserExist = await this._getDocumnetByUser(username);
         if (!isUserExist) {
             const encryptedPassword: string = await hash(password, 10);
             return this._setDocument({ username, password: encryptedPassword });
         }
-
-        return false;
     }
 
-    async validateUser(username: string, password: string): Promise<string | false> {
+    async validateUser(username: string, password: string): Promise<string> {
         const userData = await this._getDocumnetByUser(username);
         if (userData) {
             const isPasswordCorrect = await compare(password, userData.password);
@@ -27,11 +25,9 @@ class MongodbAuthCollection extends MongodbClient {
                 return this.updateTokenKey(username);
             }
         }
-
-        return false;
     }
 
-    async updateTokenKey(username: string): Promise<string> {
+    private async updateTokenKey(username: string): Promise<string> {
         const key = uuid();
         await this._updateDocumentUserKey(username, key);
         return key;
