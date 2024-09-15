@@ -1,81 +1,70 @@
-import * as express from 'express';
+import * as express from "express";
 const authRouter = express.Router();
-import { Document } from 'mongodb';
-import { MongodbAuthCollection } from '../mongodb/mongodbAuthCollection';
-const mongodbAuthCollection = new MongodbAuthCollection();
+import mongodbAuthCollection from "../mongodb/mongodbAuthCollection";
+import { ExtractJwt, Strategy, StrategyOptions } from "passport-jwt";
+import { getUserIdFromToken } from "../utilis/utils";
+import passport from "passport";
 
-import { sign, verify } from 'jsonwebtoken';
-import { compare } from 'bcrypt';
+const opts: StrategyOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKeyProvider: async (req: Request, token: string, done: (err: Error | null, secret: string | null) => void): Promise<void> => {
+    const userId: string = getUserIdFromToken(token);
+    const secret: string = await mongodbAuthCollection.getSecretByUserId(userId);
+    if (!secret) return done(new Error("Invalid client or secret not found"), null);
+    return done(null, secret);
+  },
+};
+
+passport.use(
+  new Strategy(opts, (jwtPayload, done) => {
+    if (jwtPayload) return done(null, jwtPayload.id);
+    else return done(null, false);
+  })
+);
 
 async function signIn(req: express.Request, res: express.Response, next: express.NextFunction) {
-    const { username, password } = req.body;
-    try {
-        const key: string = await mongodbAuthCollection.validateUser(username, password);
-        if (key) {
-            const token = sign({ password }, key);
-            res.status(200).json({ token });
-        } else {
-            res.status(403).json({});
-        }
-    } catch (err) {
-        res.status(500).json({ err });
-    }
+  const { username, password } = req.body;
+  try {
+    const token: string = await mongodbAuthCollection.authenticateUser(username, password);
+    if (token) res.status(200).json({ token });
+    else res.status(403).json({});
+  } catch (err) {
+    res.status(500).json({ err });
+  }
 }
 
 async function signUp(req: express.Request, res: express.Response, next: express.NextFunction) {
-    const { username, password } = req.body;
-    try {
-        const result: Document = await mongodbAuthCollection.setNewUser(username, password);
-        if (result) {
-            res.status(200).json({});
-        } else {
-            res.status(400).json({});
-        }
-    } catch (err) {
-        res.status(500).json({ err });
-    }
+  const { username, password } = req.body;
+  try {
+    const token: string = await mongodbAuthCollection.setUser(username, password);
+    if (token) res.status(200).json({ token });
+    else res.status(400).json({});
+  } catch (err) {
+    res.status(500).json({ err });
+  }
 }
 
-async function validate(req: express.Request, res: express.Response, next: express.NextFunction) {
-    const { username } = req.body;
-    try {
-        const result: Document = await mongodbAuthCollection._getDocumnetByUser(username);
-        if (!result && username !== '') {
-            res.status(200).json({});
-        } else {
-            res.status(400).json({});
-        }
-    } catch (err) {
-        res.status(500).json({});
-    }
+async function isUsernameValid(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const { username } = req.body;
+  try {
+    const isValid: boolean = await mongodbAuthCollection.isUsernameValid(username);
+    if (isValid) res.status(200).json({});
+    else res.status(400).json({});
+  } catch (err) {
+    res.status(500).json({});
+  }
 }
 
-async function users(req: express.Request, res: express.Response, next: express.NextFunction) {
-    const { token } = req.cookies;
-    const { username } = req.params;
-    let tokenValue: any;
-    let password: string;
+async function test(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const user = req.user;
+  console.log(user);
 
-    try {
-        const userData: Document = await mongodbAuthCollection._getDocumnetByUser(username);
-        password = userData.password;
-        tokenValue = verify(token, userData.key);
-    } catch (err) {
-        res.status(500).json({});
-        return err
-    }
-
-    const isPasswordCorrect = await compare(tokenValue.password, password);
-    if (isPasswordCorrect) {
-        res.status(200).json({ msg: "Hello From the Backend, You are Authenticated" })
-    } else {
-        res.status(500).json({});
-    }
+  res.status(200).json({});
 }
 
-authRouter.post('/login', signIn);
-authRouter.post('/signup', signUp);
-authRouter.post('/validate', validate);
-authRouter.get('/users/:username', users);
+authRouter.post("/login", signIn);
+authRouter.post("/signup", signUp);
+authRouter.post("/validate", isUsernameValid);
+authRouter.get("/test", passport.authenticate("jwt", { session: false }), test);
 
 export { authRouter };

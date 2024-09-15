@@ -1,37 +1,46 @@
-import { Document } from 'mongodb';
-import { MongodbClient } from './mongoClient';
-import { hash, compare } from 'bcrypt';
-import { v4 as uuid } from 'uuid';
+import { Document } from "mongodb";
+import MongodbClient from "./mongoClient";
+import { hash, compare } from "bcrypt";
+import { v4 as uuid } from "uuid";
+import { getToken } from "../utilis/utils";
 
 class MongodbAuthCollection extends MongodbClient {
-    constructor() {
-        super(process.env.MONGO_DB_NAME, process.env.MONGO_DB_AUTH_COLLECTION_NAME)
-        this.connect();
-    }
+  constructor() {
+    super(process.env.MONGO_DB_NAME, process.env.MONGO_DB_AUTH_COLLECTION_NAME);
+    this.connect();
+  }
 
-    async setNewUser(username: string, password: string): Promise<Document> {
-        const isUserExist = await this._getDocumnetByUser(username);
-        if (!isUserExist) {
-            const encryptedPassword: string = await hash(password, 10);
-            return this._setDocument({ username, password: encryptedPassword });
-        }
-    }
+  async setUser(username: string, password: string): Promise<string | null> {
+    if (username === "" || username == null) return;
 
-    async validateUser(username: string, password: string): Promise<string> {
-        const userData = await this._getDocumnetByUser(username);
-        if (userData) {
-            const isPasswordCorrect = await compare(password, userData.password);
-            if (isPasswordCorrect) {
-                return this.updateTokenKey(username);
-            }
-        }
+    const isUserExist: Document = await this._getDocumnetByUsername(username);
+    if (!isUserExist) {
+      const userId: string = uuid();
+      const secret: string = await hash(password, 10);
+      await this._setDocument({ username, password: secret, userId });
+      return getToken(userId, secret);
     }
+  }
 
-    private async updateTokenKey(username: string): Promise<string> {
-        const key = uuid();
-        await this._updateDocumentUserKey(username, key);
-        return key;
+  async authenticateUser(username: string, password: string): Promise<string | null> {
+    const userData: Document = await this._getDocumnetByUsername(username);
+    if (userData) {
+      const { userId, password: secret }: Document = userData;
+      const isPasswordCorrect: boolean = await compare(password, secret);
+      if (isPasswordCorrect) return getToken(userId, secret);
     }
+  }
+
+  async getSecretByUserId(userId: string): Promise<string | null> {    
+    const res: Document = await this._getDocumnetByUserId(userId);
+    if (res) return res.password;
+  }
+
+  async isUsernameValid(username: string): Promise<boolean> {
+    const isUsernameExist: boolean = !!(await this._getDocumnetByUsername(username));
+    return isUsernameExist || username === "" ? false : true;
+  }
 }
 
-export { MongodbAuthCollection }
+// Export as Singleton
+export default new MongodbAuthCollection();
