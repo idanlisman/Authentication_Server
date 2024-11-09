@@ -56,15 +56,13 @@ async function isUsernameValid(req: express.Request, res: express.Response, next
 }
 
 async function test(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const user = req.user;
-  console.log(user);
-
-  res.status(200).json({});
+  const id = req.user;
+  res.status(200).json({ id });
 }
 
 authRouter.post("/login", signIn);
 authRouter.post("/signup", signUp);
 authRouter.post("/validate", isUsernameValid);
-authRouter.get("/test", passport.authenticate("jwt", { session: false }), test);
+authRouter.post("/test", passport.authenticate("jwt", { session: false }), test);
 
 export { authRouter };
