@@ -51,18 +51,18 @@ async function isUsernameValid(req: express.Request, res: express.Response, next
     if (isValid) res.status(200).json({});
     else res.status(400).json({});
   } catch (err) {
-    res.status(500).json({});
+    res.status(500).json({ err });
   }
 }
 
-async function test(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const id = req.user;
-  res.status(200).json({ id });
+async function auth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const { user } = req;
+  res.status(200).json({ user });
 }
 
 authRouter.post("/login", signIn);
 authRouter.post("/signup", signUp);
 authRouter.post("/validate", isUsernameValid);
-authRouter.post("/test", passport.authenticate("jwt", { session: false }), test);
+authRouter.post("/", passport.authenticate("jwt", { session: false }), auth);
 
 export { authRouter };

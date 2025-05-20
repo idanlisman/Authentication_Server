@@ -13,7 +13,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { authRouter } from "./src/controller/authentication";
+import { dashboardRouter } from "./src/controller/dashboard";
 app.use("/v1/auth", authRouter);
+app.use("/v1/dashboard", dashboardRouter);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

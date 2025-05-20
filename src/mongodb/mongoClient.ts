@@ -57,6 +57,15 @@ class MongodbClient {
       throw err;
     }
   }
+
+  protected async _updateDocumentByUserId(userId: string, item: Object): Promise<Document> {
+    try {
+      return await this.collection.updateOne({ userId }, { $push: item, $setOnInsert: { userId } }, { upsert: true });
+    } catch (err) {
+      console.error({ err });
+      throw err;
+    }
+  }
 }
 
 export default MongodbClient;
